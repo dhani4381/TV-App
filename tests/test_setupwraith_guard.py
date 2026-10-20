@@ -30,6 +30,7 @@ class SetupwraithGuardTest(unittest.TestCase):
                 '#!/bin/sh\n'
                 'case "$*" in\n'
                 f'  *dumpsys*) {answer} ;;\n'
+                '  *recovery*) exit 0 ;;\n'
                 '  *) cat > "$CAPTURE" ;;\n'
                 'esac\n')
             client.chmod(0o755)
