@@ -1,4 +1,5 @@
 tools/venv/
+.venv/
 tools/adbkey/
 __pycache__/
 launcher/.gradle/
