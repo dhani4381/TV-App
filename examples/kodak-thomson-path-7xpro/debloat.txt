@@ -1,0 +1,61 @@
+# Kodak / Thomson 7XPRO (SPPL, ro.product.model PATH_7XPRO, device LEDTV32HD, Amlogic txlx),
+# Android TV 9 (API 28), build PI.20210902 release-keys. 1 GB RAM, 1280x720 panel. Sold in India.
+#
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/kodak-thomson-path-7xpro/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/kodak-thomson-path-7xpro/debloat.txt
+# Everything is DISABLED, not uninstalled. Comment out any line you want to keep.
+#
+# Stock launcher: com.google.android.tvlauncher.
+# Live TV app: com.droidlogic.droidlivetv, inputs via com.droidlogic.tvinput.
+# HDMI 1/2, AV and Live TV all show up in the Inputs menu.
+#
+# DO NOT DISABLE (load-bearing TV hardware / inputs / remote / settings):
+# com.droidlogic com.droidlogic.tvinput com.droidlogic.tv.settings com.droidlogic.tv.soundeffectsettings
+# com.droidlogic.BluetoothRemote com.droidlogic.SubTitleService com.droidlogic.droidlivetv
+# com.android.tv.settings com.android.bluetooth com.google.android.inputmethod.latin
+
+# Google TV recommendations, ads and auto-installs
+com.google.android.tvrecommendations
+com.google.android.leanbacklauncher.recommendations
+com.google.android.tvsetup.partnercustomizer
+com.google.android.partnersetup
+android.autoinstalls.config.amlogic.device
+
+# Telemetry and bug reporting
+com.google.android.feedback
+com.google.android.tv.bugreportsender
+
+# SPPL factory / aging / manual leftovers
+com.sppl.emanual
+com.tvfactory
+com.ctv.factorytest
+com.cultraview.agingmodel
+
+# Preloaded unused Google apps
+com.google.android.play.games
+com.google.android.videos
+com.google.android.youtube.tvmusic
+
+# Phone-style sync and backup services unused on a TV
+com.google.android.syncadapters.calendar
+com.google.android.syncadapters.contacts
+com.android.providers.calendar
+com.android.providers.contacts
+com.android.printspooler
+com.android.smspush
+com.android.wallpaperbackup
+com.google.android.backuptransport
+com.android.sharedstoragebackup
+com.android.backupconfirm
+
+# Stock basic players (unneeded with Kodi and OTT apps installed)
+com.ctv.photoplayer
+com.ctv.music
+com.droidlogic.videoplayer
+
+# Kept by default (uncomment to disable if desired):
+# com.google.android.katniss               # Google Assistant / voice search
+# com.google.android.speech.pumpkin        # Assistant hotword
+# com.google.android.apps.mediashell       # Chromecast built-in
+# com.google.android.backdrop              # Ambient screensaver
+# com.droidlogic.otaupgrade                # OTA firmware update client
