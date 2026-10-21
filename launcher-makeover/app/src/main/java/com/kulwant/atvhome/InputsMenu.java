@@ -137,6 +137,25 @@ final class InputsMenu {
             it.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             items.add(it);
         }
+
+        // Connect Phone / Cast option
+        Intent cast = c.getPackageManager().getLeanbackLaunchIntentForPackage("com.ionitech.airscreen");
+        if (cast == null) cast = new Intent("android.settings.CAST_SETTINGS");
+        cast.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        Item itCast = new Item();
+        itCast.label = "Connect Phone (Cast)";
+        itCast.connected = true;
+        itCast.intent = cast;
+        items.add(itCast);
+
+        // Switch Home Launcher option
+        Intent homeChooser = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        Item itSwitch = new Item();
+        itSwitch.label = "Switch Launcher...";
+        itSwitch.connected = true;
+        itSwitch.intent = Intent.createChooser(homeChooser, "Select Home Launcher").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        items.add(itSwitch);
+
         return items;
     }
 }

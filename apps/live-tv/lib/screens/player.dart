@@ -226,20 +226,22 @@ class _PlayerState extends State<Player> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(channel.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
+                Text(
+                  channel.number > 0 ? '${channel.number} · ${channel.name}' : channel.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 4),
                 Text(
-                  '${channel.category}  ·  ${index + 1} of ${widget.channels.length}  ·  1080p'
+                  '${channel.category}  ·  ${index + 1} of ${widget.channels.length}  ·  HD'
                   '${streamIdx > 0 ? '  ·  backup stream ${streamIdx + 1}' : ''}',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 13),
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 14),
                 ),
               ],
             ),
           ),
-          Text('▲ ▼  change channel', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12)),
+          Text('▲ ▼  change channel', style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 13)),
         ],
       ),
     );

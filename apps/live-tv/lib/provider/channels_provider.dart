@@ -9,20 +9,20 @@ import '../model/channel.dart';
 
 /// Sidebar order. Categories with no channels are hidden.
 const categoryOrder = [
+  'Devotional',
   'News',
   'Entertainment',
   'Movies',
-  'Music',
   'Sports',
+  'Music',
   'Kids',
   'Infotainment',
   'Business',
-  'Devotional',
   'Other',
 ];
 
-/// Loads every playlist in the catalog, keeps 1080p streams only, adds logos and
-/// categories from the iptv-org India index, and caches the result on disk.
+/// Loads every playlist in the catalog, keeps HD streams, adds logos and
+/// categories from the iptv-org India index, supports JioTV-Go, and caches the result on disk.
 class ChannelsProvider {
   static const streamsCatalogUrl =
       'https://raw.githubusercontent.com/kananinirav/Indian-IPTV-App/refs/heads/master/data/streams.csv';
@@ -50,6 +50,14 @@ class ChannelsProvider {
     final catalog = await http.get(Uri.parse(streamsCatalogUrl)).timeout(_timeout);
     if (catalog.statusCode != 200) throw Exception('Failed to load stream sources');
     final sources = _parseCatalog(catalog.body);
+
+    // Check if JioTV-Go local server is running on the TV
+    try {
+      final jioRes = await http.get(Uri.parse('http://127.0.0.1:5001/playlist.m3u')).timeout(const Duration(seconds: 2));
+      if (jioRes.statusCode == 200 && jioRes.body.contains('#EXTINF')) {
+        sources.add(const MapEntry('JioTV', 'http://127.0.0.1:5001/playlist.m3u'));
+      }
+    } catch (_) {}
 
     final responses = await Future.wait([
       http.get(Uri.parse(logoIndexUrl)).timeout(_timeout).then((r) => r.statusCode == 200 ? r.body : '',
@@ -176,6 +184,62 @@ String _category(String group) {
   }
 }
 
+int _assignChannelNumber(String name, String category) {
+  final n = name.toLowerCase();
+  if (n.contains('aaj tak')) return 101;
+  if (n.contains('abp news')) return 102;
+  if (n.contains('zee news')) return 103;
+  if (n.contains('ndtv')) return 104;
+  if (n.contains('india tv')) return 105;
+  if (n.contains('news18')) return 106;
+  if (n.contains('republic')) return 107;
+  if (n.contains('dd news')) return 108;
+  if (n.contains('wion')) return 109;
+
+  if (n.contains('star plus')) return 201;
+  if (n.contains('colors') && !n.contains('cineplex')) return 202;
+  if (n.contains('sony entertainment') || n.contains('set india') || n.contains('sony tv')) return 203;
+  if (n.contains('zee tv')) return 204;
+  if (n.contains('sony sab') || n.contains('sab tv')) return 205;
+  if (n.contains('&tv') || n.contains('and tv')) return 206;
+  if (n.contains('star bharat')) return 207;
+  if (n.contains('dangal')) return 208;
+  if (n.contains('dd national')) return 209;
+
+  if (n.contains('aastha')) return 301;
+  if (n.contains('sanskar')) return 302;
+  if (n.contains('sadhna')) return 303;
+  if (n.contains('peace of mind')) return 304;
+  if (n.contains('arihant')) return 305;
+  if (n.contains('bhakti')) return 306;
+  if (n.contains('divya')) return 307;
+  if (n.contains('ishwar')) return 308;
+  if (n.contains('hare krishna')) return 309;
+
+  if (n.contains('star gold')) return 401;
+  if (n.contains('sony max')) return 402;
+  if (n.contains('zee cinema')) return 403;
+  if (n.contains('colors cineplex')) return 404;
+  if (n.contains('b4u movies')) return 405;
+  if (n.contains('cinema tv')) return 406;
+  if (n.contains('&pictures') || n.contains('and pictures')) return 407;
+
+  if (n.contains('star sports 1')) return 501;
+  if (n.contains('star sports hindi')) return 502;
+  if (n.contains('sony sports') || n.contains('sony ten')) return 503;
+  if (n.contains('sports18')) return 504;
+  if (n.contains('dd sports')) return 505;
+
+  if (n.contains('9xm')) return 601;
+  if (n.contains('9x jalwa')) return 602;
+  if (n.contains('9x tashan')) return 603;
+  if (n.contains('9x jhakaas')) return 604;
+  if (n.contains('b4u music')) return 605;
+  if (n.contains('mtv beats')) return 606;
+
+  return 0;
+}
+
 List<Map<String, dynamic>> _buildChannels(Map<String, dynamic> args) {
   // index: channel id / name -> logo + group
   final logoById = <String, String>{}, logoByName = <String, String>{};
@@ -199,8 +263,9 @@ List<Map<String, dynamic>> _buildChannels(Map<String, dynamic> args) {
   final byKey = <String, Map<String, dynamic>>{};
   for (final p in (args['playlists'] as List).cast<Map>()) {
     final sportsList = (p['name'] as String).toLowerCase().contains('sport');
+    final isJio = (p['name'] as String).toLowerCase().contains('jio');
     for (final e in _entries(p['body'] as String)) {
-      if (!e.name.contains('(1080p)')) continue;   // 1080p only
+      if (!isJio && !e.name.contains('(1080p)') && !e.name.contains('(720p)')) continue;
       final id = e.attr(_tvgId);
       final base = _baseId(id);
       final key = _nameKey(e.name);
@@ -215,11 +280,14 @@ List<Map<String, dynamic>> _buildChannels(Map<String, dynamic> args) {
         if (!urls.contains(e.url)) urls.add(e.url);
         continue;
       }
+      final cleanName = _cleanName(e.name);
+      final chNo = _assignChannelNumber(cleanName, category);
       byKey['$category|$key'] = {
-        'n': _cleanName(e.name),
+        'n': cleanName,
         'l': logo,
         'c': category,
         'i': id,
+        'no': chNo,
         's': <String>[e.url],
       };
     }
@@ -228,9 +296,14 @@ List<Map<String, dynamic>> _buildChannels(Map<String, dynamic> args) {
   final list = byKey.values.toList();
   bool indian(Map m) => (m['i'] as String).contains('.in@') || (m['i'] as String).endsWith('.in');
   list.sort((a, b) {
-    // Indian channels first (matters for the mostly international Sports list), then by name
+    // Indian channels first (matters for the mostly international Sports list)
     final ia = indian(a) ? 0 : 1, ib = indian(b) ? 0 : 1;
     if (ia != ib) return ia - ib;
+    // Numbered channels first in numeric order (101, 102, 201...)
+    final noA = (a['no'] as int? ?? 0), noB = (b['no'] as int? ?? 0);
+    if (noA > 0 && noB > 0) return noA.compareTo(noB);
+    if (noA > 0) return -1;
+    if (noB > 0) return 1;
     return (a['n'] as String).toLowerCase().compareTo((b['n'] as String).toLowerCase());
   });
   return list;

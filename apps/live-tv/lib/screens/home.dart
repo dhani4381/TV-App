@@ -43,7 +43,7 @@ class Home extends StatefulWidget {
 /// Category sidebar on the left, channel grid on the right. D-pad movement is handled
 /// explicitly (not by Flutter's geometric focus search) so it is predictable.
 class _HomeState extends State<Home> {
-  static const cols = 6;
+  static const cols = 5;
 
   final provider = ChannelsProvider();
 
@@ -546,7 +546,9 @@ class _TileState extends State<_Tile> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Text(
-              widget.channel.name,
+              widget.channel.number > 0
+                  ? '${widget.channel.number} · ${widget.channel.name}'
+                  : widget.channel.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -558,6 +560,6 @@ class _TileState extends State<_Tile> {
     );
   }
 
-  static const _name = TextStyle(color: Color(0xFFA0A0AA), fontSize: 11.5, fontWeight: FontWeight.w500);
-  static const _nameFocused = TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w600);
+  static const _name = TextStyle(color: Color(0xFFC4C4D0), fontSize: 13.5, fontWeight: FontWeight.w600);
+  static const _nameFocused = TextStyle(color: Colors.white, fontSize: 14.0, fontWeight: FontWeight.w700);
 }
