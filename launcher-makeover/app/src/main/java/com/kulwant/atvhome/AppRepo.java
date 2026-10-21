@@ -72,6 +72,9 @@ final class AppRepo {
             a.pkg = ai.packageName;
             a.component = new ComponentName(ai.packageName, ai.name);
             a.label = String.valueOf(ri.loadLabel(pm)).trim();
+            if ("com.skylake.skytv.jgorunner".equals(ai.packageName)) {
+                a.label = "Jio TV";
+            }
             a.leanback = leanback;
             out.put(a.pkg, a);
         }

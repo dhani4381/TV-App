@@ -138,23 +138,19 @@ final class InputsMenu {
             items.add(it);
         }
 
-        // Connect Phone / Cast option
+        // Connect Phone / Cast option (supports Android POCO/Xiaomi/Samsung via Miracast/Google Cast and iPhone via AirPlay)
         Intent cast = c.getPackageManager().getLeanbackLaunchIntentForPackage("com.ionitech.airscreen");
-        if (cast == null) cast = new Intent("android.settings.CAST_SETTINGS");
-        cast.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        Item itCast = new Item();
-        itCast.label = "Connect Phone (Cast)";
-        itCast.connected = true;
-        itCast.intent = cast;
-        items.add(itCast);
-
-        // Switch Home Launcher option
-        Intent homeChooser = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        Item itSwitch = new Item();
-        itSwitch.label = "Switch Launcher...";
-        itSwitch.connected = true;
-        itSwitch.intent = Intent.createChooser(homeChooser, "Select Home Launcher").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        items.add(itSwitch);
+        if (cast == null) cast = c.getPackageManager().getLaunchIntentForPackage("com.ionitech.airscreen");
+        if (cast == null) cast = c.getPackageManager().getLeanbackLaunchIntentForPackage("io.github.jqssun.airplay");
+        if (cast == null) cast = c.getPackageManager().getLaunchIntentForPackage("io.github.jqssun.airplay");
+        if (cast != null) {
+            cast.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            Item itCast = new Item();
+            itCast.label = "Connect Phone (Cast)";
+            itCast.connected = true;
+            itCast.intent = cast;
+            items.add(itCast);
+        }
 
         return items;
     }

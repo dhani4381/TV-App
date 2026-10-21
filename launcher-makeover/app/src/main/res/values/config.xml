@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Edit this file to customise the home screen, then run ./build_and_install.sh -->
 <resources>
-    <!-- Dock apps, left to right. Package names; missing or disabled apps are skipped. -->
+    <!-- Dock apps, left to right. Exactly 5 apps: Hotstar, Prime, Live TV, Jio TV, YouTube. -->
     <string-array name="dock_packages">
         <item>in.startv.hotstar</item>
         <item>com.amazon.amazonvideo.livingroom</item>
-        <item>com.google.android.youtube.tv</item>
-        <item>com.sonyliv</item>
-        <item>org.xbmc.kodi</item>
         <item>com.nk.live_tv</item>
-        <item>com.lagradost.cloudstream3</item>
-        <item>com.ionitech.airscreen</item>
+        <item>com.skylake.skytv.jgorunner</item>
+        <item>com.google.android.youtube.tv</item>
     </string-array>
 
     <!-- Apps per row, in the dock and in the grid (3 to 6). -->

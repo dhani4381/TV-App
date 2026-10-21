@@ -51,13 +51,16 @@ class ChannelsProvider {
     if (catalog.statusCode != 200) throw Exception('Failed to load stream sources');
     final sources = _parseCatalog(catalog.body);
 
-    // Check if JioTV-Go local server is running on the TV
-    try {
-      final jioRes = await http.get(Uri.parse('http://127.0.0.1:5001/playlist.m3u')).timeout(const Duration(seconds: 2));
-      if (jioRes.statusCode == 200 && jioRes.body.contains('#EXTINF')) {
-        sources.add(const MapEntry('JioTV', 'http://127.0.0.1:5001/playlist.m3u'));
-      }
-    } catch (_) {}
+    // Check if JioTV-Go local server is running on the TV (default port 5350, fallback 5001)
+    for (final port in [5350, 5001]) {
+      try {
+        final jioRes = await http.get(Uri.parse('http://127.0.0.1:$port/playlist.m3u')).timeout(const Duration(seconds: 3));
+        if (jioRes.statusCode == 200 && jioRes.body.contains('#EXTINF')) {
+          sources.add(MapEntry('JioTV', 'http://127.0.0.1:$port/playlist.m3u'));
+          break;
+        }
+      } catch (_) {}
+    }
 
     final responses = await Future.wait([
       http.get(Uri.parse(logoIndexUrl)).timeout(_timeout).then((r) => r.statusCode == 200 ? r.body : '',
