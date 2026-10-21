@@ -22,11 +22,15 @@ fi
 
 TARGET="${1:-}"
 
-declare -A LAUNCHERS
-LAUNCHERS["makeover"]="com.kulwant.atvhome/.HomeActivity"
-LAUNCHERS["cleanyourtv"]="com.gathin.tvhome/.MainActivity"
-LAUNCHERS["personal"]="com.personal.tvhome/.MainActivity"
-LAUNCHERS["stock"]="com.google.android.tvlauncher/.MainActivity"
+get_activity() {
+  case "$1" in
+    makeover) echo "com.kulwant.atvhome/.HomeActivity" ;;
+    cleanyourtv) echo "com.gathin.tvhome/.MainActivity" ;;
+    personal) echo "com.personal.tvhome/.MainActivity" ;;
+    stock) echo "com.google.android.tvlauncher/.MainActivity" ;;
+    *) echo "" ;;
+  esac
+}
 
 list_launchers() {
   echo "Checking active home and installed launchers on TV ($TV_HOST)..."
@@ -34,7 +38,7 @@ list_launchers() {
   echo ""
   echo "Available switch targets:"
   for k in makeover cleanyourtv personal stock; do
-    echo "  - $k -> ${LAUNCHERS[$k]}"
+    echo "  - $k -> $(get_activity "$k")"
   done
 }
 
@@ -43,7 +47,7 @@ if [ -z "$TARGET" ] || [ "$TARGET" = "list" ] || [ "$TARGET" = "--list" ]; then
   exit 0
 fi
 
-TARGET_ACTIVITY="${LAUNCHERS[$TARGET]:-}"
+TARGET_ACTIVITY="$(get_activity "$TARGET")"
 if [ -z "$TARGET_ACTIVITY" ]; then
   echo "Unknown launcher: '$TARGET'" >&2
   echo "Valid options: makeover | cleanyourtv | personal | stock | list" >&2
@@ -59,7 +63,7 @@ echo "Switching default TV Home to: $TARGET ($TARGET_ACTIVITY)..."
 # Set as default home activity
 "$PY" tools/tv.py "cmd package set-home-activity $TARGET_ACTIVITY"
 
-# Launch it on screen
-"$PY" tools/tv.py "am start -n $TARGET_ACTIVITY"
+# Wake display and bring launcher to foreground
+"$PY" tools/tv.py "input keyevent KEYCODE_HOME"
 
-echo "Successfully switched default Home to: $TARGET"
+echo "Switched to $TARGET successfully! Pressing Home on the TV remote now opens $TARGET."
