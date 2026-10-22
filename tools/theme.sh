@@ -15,19 +15,13 @@ PY=venv/bin/python
 [ -x "$PY" ] || PY=venv/Scripts/python.exe
 [ -x "$PY" ] || { echo "run: python3 -m venv tools/venv && tools/venv/bin/pip install -r tools/requirements.txt" >&2; exit 1; }
 export MSYS_NO_PATHCONV=1
-PKG=com.gathin.tvhome
+PKG="${THEME_PKG:-com.kulwant.atvhome}"
 DIR=/sdcard/Android/data/$PKG/files
 # A unique marker lets the launcher clear on-TV layout/motion choices after every theme push,
 # including a push of identical config.json bytes and --reset.
 REVISION="$("$PY" -I -c 'import uuid; print(uuid.uuid4().hex)')"
 tv() { "$PY" -I tv.py "$@"; }
-# Restart Home so it rereads the theme. Android drops a force-stopped app's accessibility services from the
-# enabled list, which would switch off InputKeyService/HomeKeyService, so put the list back if it had ours.
-# Android removes them asynchronously while it handles the restart, so wait a second before writing the
-# list back. Writing the same list back is not enough: the force-stop also turns accessibility_enabled off,
-# and the service only binds again once the list changes. So restart first, then clear the list, write it
-# back and switch accessibility on again as build-and-install does.
-RESTART="a=\$(settings get secure enabled_accessibility_services); am force-stop $PKG; am start -n $PKG/.MainActivity >/dev/null; case \"\$a\" in *$PKG*) sleep 1; settings put secure enabled_accessibility_services ''; settings put secure enabled_accessibility_services \"\$a\"; settings put secure accessibility_enabled 1 ;; esac"
+RESTART="am force-stop $PKG; am start -n $PKG/.HomeActivity >/dev/null 2>&1 || am start -n $PKG/.MainActivity >/dev/null 2>&1"
 
 if [ "${1:-}" = --reset ]; then
   tv "mkdir -p $DIR; rm -f $DIR/config.json $DIR/wallpaper.jpg; printf '%s' '$REVISION' > $DIR/theme_revision; $RESTART; echo reset" | tail -n 1

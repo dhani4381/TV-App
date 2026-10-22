@@ -3,9 +3,14 @@ tools/venv
 .venv/
 tools/adbkey/
 __pycache__/
+.gradle/
+build/
 launcher/.gradle/
 launcher/build/
 launcher/app/build/
+launcher-makeover/.gradle/
+launcher-makeover/build/
+launcher-makeover/app/build/
 launcher/local.properties
 # your own TV's dumps (serial, android_id, device names) stay local
 backup/

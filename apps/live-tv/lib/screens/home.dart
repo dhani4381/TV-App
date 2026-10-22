@@ -14,6 +14,8 @@ const sidebarBg = Color(0xFF131318);
 const dim = Color(0xFF8E8E98);
 
 const _icons = <String, IconData>{
+  'Favorites': Icons.star_rounded,
+  'Telugu': Icons.translate_rounded,
   'All': Icons.apps_rounded,
   'News': Icons.newspaper_rounded,
   'Entertainment': Icons.theater_comedy_rounded,
@@ -110,10 +112,24 @@ class _HomeState extends State<Home> {
     final map = <String, List<Channel>>{'All': channels};
     for (final c in channels) {
       (map[c.category] ??= []).add(c);
+      if (c.isTelugu) {
+        (map['Telugu'] ??= []).add(c);
+      }
+      if (c.isFavorite) {
+        (map['Favorites'] ??= []).add(c);
+      }
     }
-    final cats = ['All', ...categoryOrder.where((c) => map[c]?.isNotEmpty ?? false)];
+    final cats = [
+      if (map['Favorites']?.isNotEmpty ?? false) 'Favorites',
+      if (map['Telugu']?.isNotEmpty ?? false) 'Telugu',
+      'All',
+      ...categoryOrder.where((c) => c != 'Favorites' && c != 'Telugu' && (map[c]?.isNotEmpty ?? false)),
+    ];
     final first = categories.isEmpty;
-    final keep = first ? 'All' : categories[selected];
+    final defaultCat = cats.contains('Favorites')
+        ? 'Favorites'
+        : (cats.contains('Telugu') ? 'Telugu' : 'All');
+    final keep = first ? defaultCat : categories[selected];
     setState(() {
       byCategory = map;
       categories = cats;
@@ -457,6 +473,11 @@ class _SideItemState extends State<_SideItem> {
   @override
   Widget build(BuildContext context) {
     final fg = focused ? Colors.black : (widget.selected ? Colors.white : const Color(0xFFB4B4BE));
+    final iconColor = focused
+        ? Colors.black
+        : (widget.label == 'Favorites'
+            ? const Color(0xFFFFD700)
+            : (widget.label == 'Telugu' ? const Color(0xFFFF9800) : fg));
     return Focus(
       focusNode: widget.node,
       onFocusChange: (f) {
@@ -478,7 +499,7 @@ class _SideItemState extends State<_SideItem> {
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(children: [
-          Icon(widget.icon, size: 18, color: fg),
+          Icon(widget.icon, size: 18, color: iconColor),
           const SizedBox(width: 12),
           Expanded(
             child: Text(widget.label,
@@ -521,7 +542,25 @@ class _TileState extends State<_Tile> {
     // Kept deliberately flat: ~40 of these are built whenever the category changes.
     Widget card = Padding(
       padding: const EdgeInsets.all(4.5),
-      child: ChannelIcon(channel: widget.channel, width: widget.cardW - 9, height: widget.cardH - 9),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          ChannelIcon(channel: widget.channel, width: widget.cardW - 9, height: widget.cardH - 9),
+          if (widget.channel.isFavorite)
+            Positioned(
+              top: 4,
+              right: 4,
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.65),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.star_rounded, size: 14, color: Color(0xFFFFD700)),
+              ),
+            ),
+        ],
+      ),
     );
     if (focused) {
       card = Transform.scale(
